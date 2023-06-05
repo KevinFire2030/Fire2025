@@ -11,7 +11,11 @@ class MyWindow(QMainWindow):
         # Kiwoom Login
         self.kiwoom = QAxWidget("KHOPENAPI.KHOpenAPICtrl.1")
         self.kiwoom.dynamicCall("CommConnect()")
+
+        # OpenAPI+ Event
         self.kiwoom.OnEventConnect.connect(self.event_connect)
+        self.kiwoom.OnReceiveTrData.connect(self.receive_trdata)
+
 
         self.setWindowTitle("PyStock")
         # 출력 위치 (300, 300), 크기 (300, 150)
@@ -54,6 +58,42 @@ class MyWindow(QMainWindow):
         # 입력값 가지오기
         code = self.code_edit.text()
         self.text_edit.append("종목코드: " + code)
+
+        # SetInputValue
+        # TR 입력값 설정
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
+
+        # CommRqData
+        # TR을 서버로 송신
+        self.kiwoom.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10001_req", "opt10001", 0, "0101")
+
+    def receive_trdata(self, screen_no, rqname, trcode, recordname, prev_next, data_len, err_code, msg1, msg2):
+
+        if rqname == "opt10001_req":
+
+            # 일부 TR에서 사용상 제약이 있음므로 이 함수 대신 GetCommData()함수를 사용하시기 바랍니다.
+            # 이   함수는   지원하지   않을   것이므로   용도에   맞는   전용   함수를   사용할   것(비고참고)
+            # 조회 정보   요청   - openApi.GetCommData(“OPT00001”, RQName, 0, “현재가”)
+            # 실시간정보   요청   - openApi.GetCommRealData(“000660”, 10);
+            # 체결정보   요청   - openApi.GetChejanData(9203);
+
+            """
+            name = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname,
+                                           0, "종목명")
+            volume = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname,
+                                             0, "거래량")
+            """
+
+            # GetCommData 메서드는 Open API+에서 제공하는 메서드이므로 이를 파이썬 코드에서 사용하려면 dynamicCall 메서드를 사용해야 한다
+
+            name = self.kiwoom.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "종목명")
+            volume = self.kiwoom.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "거래량")
+
+            # strip 메서드를 호출해서 문자열의 공백을 제거
+            # '                                          키움증권'
+            # '               35121'
+            self.text_edit.append("종목명: " + name.strip())
+            self.text_edit.append("거래량: " + volume.strip())
 
 
 if __name__ == "__main__":
