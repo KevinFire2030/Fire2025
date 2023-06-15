@@ -46,6 +46,15 @@ class Kiwoom(QAxWidget):
         ret = self.dynamicCall("GetLoginInfo(QString)", tag)
         return ret
 
+    def get_code_list_by_market(self, market):
+        code_list = self.dynamicCall("GetCodeListByMarket(QString)", market)
+        code_list = code_list.split(';')
+        return code_list[:-1]
+
+    def get_master_code_name(self, code):
+        code_name = self.dynamicCall("GetMasterCodeName(QString)", code)
+        return code_name
+
     def set_input_value(self, id, value):
         self.dynamicCall("SetInputValue(QString, QString)", id, value)
 

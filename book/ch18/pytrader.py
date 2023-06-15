@@ -5,7 +5,7 @@ from PyQt5 import uic
 from Kiwoom import *
 
 
-form_class = uic.loadUiType("pytrader.ui")[0]
+form_class = uic.loadUiType("pytrader_v0.2.ui")[0]
 
 class MyWindow(QMainWindow, form_class):
     def __init__(self):
@@ -21,6 +21,9 @@ class MyWindow(QMainWindow, form_class):
 
         accouns_num = int(self.kiwoom.get_login_info("ACCOUNT_CNT"))
         accounts = self.kiwoom.get_login_info("ACCNO")
+
+        accounts_list = accounts.split(';')[0:accouns_num]
+        self.comboBox.addItems(accounts_list)
 
         self.lineEdit.textChanged.connect(self.code_changed)
         self.pushButton.clicked.connect(self.send_order)
