@@ -5,7 +5,7 @@ from PyQt5 import uic
 from Kiwoom import *
 
 
-form_class = uic.loadUiType("pytrader_v0.3.ui")[0]
+form_class = uic.loadUiType("pytrader_v0.4.ui")[0]
 
 class MyWindow(QMainWindow, form_class):
     def __init__(self):
@@ -32,6 +32,45 @@ class MyWindow(QMainWindow, form_class):
         self.lineEdit.textChanged.connect(self.code_changed)
         self.pushButton.clicked.connect(self.send_order)
         self.pushButton_2.clicked.connect(self.check_balance)
+
+        self.load_buy_sell_list()
+
+    def load_buy_sell_list(self):
+        f = open("buy_list.txt", 'rt', encoding='UTF8')
+        buy_list = f.readlines()
+        f.close()
+
+        f = open("sell_list.txt", 'rt', encoding='UTF8')
+        sell_list = f.readlines()
+        f.close()
+
+        row_count = len(buy_list) + len(sell_list)
+        self.tableWidget_3.setRowCount(row_count)
+
+        # buy list
+        for j in range(len(buy_list)):
+            row_data = buy_list[j]
+            split_row_data = row_data.split(';')
+            split_row_data[1] = self.kiwoom.get_master_code_name(split_row_data[1].rsplit())
+
+            for i in range(len(split_row_data)):
+                item = QTableWidgetItem(split_row_data[i].rstrip())
+                item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
+                self.tableWidget_3.setItem(j, i, item)
+
+        # sell list
+        for j in range(len(sell_list)):
+            row_data = sell_list[j]
+            split_row_data = row_data.split(';')
+            split_row_data[1] = self.kiwoom.get_master_code_name(split_row_data[1].rstrip())
+
+            for i in range(len(split_row_data)):
+                item = QTableWidgetItem(split_row_data[i].rstrip())
+                item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
+                self.tableWidget_3.setItem(len(buy_list) + j, i, item)
+
+        self.tableWidget_3.resizeRowsToContents()
+
 
     def code_changed(self):
         code = self.lineEdit.text()
