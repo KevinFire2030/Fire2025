@@ -4,6 +4,7 @@ import Kiwoom
 import time
 from pandas import DataFrame
 import datetime
+import pandas_datareader.data as web
 
 MARKET_KOSPI   = 0
 MARKET_KOSDAQ  = 10
@@ -18,7 +19,9 @@ class PyMon:
         self.kospi_codes = self.kiwoom.get_code_list_by_market(MARKET_KOSPI)
         self.kosdaq_codes = self.kiwoom.get_code_list_by_market(MARKET_KOSDAQ)
 
-    def get_ohlcv(self, code, start):
+    def get_ohlcv(self, code, end):
+
+        """
         self.kiwoom.ohlcv = {'date': [], 'open': [], 'high': [], 'low': [], 'close': [], 'volume': []}
 
         self.kiwoom.set_input_value("종목코드", code)
@@ -29,12 +32,62 @@ class PyMon:
 
         df = DataFrame(self.kiwoom.ohlcv, columns=['open', 'high', 'low', 'close', 'volume'],
                        index=self.kiwoom.ohlcv['date'])
+        """
+
+        df = web.DataReader(code, 'naver', end=end)
+
+        df['Open'] = df['Open'].astype(float)
+        df['High'] = df['High'].astype(float)
+        df['Low'] = df['Low'].astype(float)
+        df['Close'] = df['Close'].astype(float)
+        df['Volume'] = df['Volume'].astype(int)
+
         return df
 
+    def check_speedy_rising_volume(self, code):
+        today = datetime.datetime.today().strftime("%Y%m%d")
+        df = self.get_ohlcv(code, today)
+
+        volumes = df['Volume']
+
+        if len(volumes) < 21:
+            return False
+
+        sum_vol20 = 0
+        today_vol = 0
+
+        for i, vol in enumerate(volumes):
+            if i == 0:
+                today_vol = vol
+            elif 1 <= i <= 20:
+                sum_vol20 += vol
+            else:
+                break
+
+        avg_vol20 = sum_vol20 / 20
+        if today_vol > avg_vol20 * 10:
+            return True
+
+    def update_buy_list(self, buy_list):
+        f = open("buy_list.txt", "wt", encoding='UTF8')
+        for code in buy_list:
+            f.writelines(["매수;", code, ";시장가;10;0;매수전\n"])
+        f.close()
 
     def run(self):
-        df = self.get_ohlcv("039490", "20230619")
-        print(df)
+        buy_list = []
+        num = len(self.kosdaq_codes)
+
+        for i, code in enumerate(self.kosdaq_codes):
+
+            #time.sleep(1)
+
+            print(i, '/', num)
+            if self.check_speedy_rising_volume(code):
+                print('급등주:', code)
+                buy_list.append(code)
+
+        self.update_buy_list(buy_list)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
