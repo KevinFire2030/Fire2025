@@ -14,7 +14,7 @@ import re
 biz_day = re.findall('[0-9]+', parse_day)
 biz_day = ''.join(biz_day)
 
-biz_day = '20230624'
+biz_day = '20230623'
 
 
 #업종분류 현황 크롤링
@@ -117,4 +117,6 @@ import sqlite3
 
 con = sqlite3.connect("kor_ticker.db")
 kor_ticker.to_sql('kor_ticker', con, if_exists='replace')
+
+print('ok')
 
