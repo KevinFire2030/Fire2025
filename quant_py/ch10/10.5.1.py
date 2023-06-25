@@ -85,7 +85,7 @@ for i in tqdm(range(0, len(ticker_list))):
         args = data_fs_bind.values.tolist()
 
         con = sqlite3.connect("data_fs.db")
-        data_fs_bind.to_sql('data_fs', con, if_exists='replace')
+        data_fs_bind.to_sql('data_fs', con, if_exists='append')
 
     except:
 
