@@ -84,8 +84,8 @@ for i in tqdm(range(0, len(ticker_list))):
         # 재무제표 데이터를 DB에 저장
         args = data_fs_bind.values.tolist()
 
-        con = sqlite3.connect("data_fs.db")
-        data_fs_bind.to_sql('data_fs', con, if_exists='append')
+        con = sqlite3.connect("kor_fs.db")
+        data_fs_bind.to_sql('kor_fs', con, if_exists='append')
 
     except:
 
