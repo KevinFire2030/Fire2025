@@ -63,6 +63,9 @@ class PyMon:
 
         krx = krx.where((krx['category']=='보통주') & (krx['state']=='정상'))
 
+        krx = krx.dropna()
+        krx.reset_index(drop=True, inplace=True)
+
         #return krx.where(krx['category']=='보통주')
 
         return krx
@@ -81,16 +84,27 @@ class PyMon:
         df = DataFrame(self.kiwoom.ohlcv, columns=['open', 'high', 'low', 'close', 'volume'],
                        index=self.kiwoom.ohlcv['date'])
         """
+        #print(code)
 
-        df = web.DataReader(code, 'naver', end=end)
+        try:
 
-        df['Open'] = df['Open'].astype(float)
-        df['High'] = df['High'].astype(float)
-        df['Low'] = df['Low'].astype(float)
-        df['Close'] = df['Close'].astype(float)
-        df['Volume'] = df['Volume'].astype(int)
+            df = web.DataReader(code, 'naver', end=end)
 
-        return df
+            df['Open'] = df['Open'].astype(float)
+            df['High'] = df['High'].astype(float)
+            df['Low'] = df['Low'].astype(float)
+            df['Close'] = df['Close'].astype(float)
+            df['Volume'] = df['Volume'].astype(int)
+
+            return df
+
+        except:
+
+            print(f"read error: {code}")
+
+            return False
+
+
 
     def check_speedy_rising_volume(self, code):
         today = datetime.datetime.today().strftime("%Y%m%d")
@@ -125,14 +139,17 @@ class PyMon:
     def run(self):
         buy_list = []
         num = len(self.krx_codes)
+        #codes = self.krx_codes['code']
 
-        for i, code in enumerate(self.krx_codes):
+        for i, code in enumerate(self.krx_codes['code']):
 
             #time.sleep(1)
 
+            #print(code)
+
             print(i, '/', num)
             if self.check_speedy_rising_volume(code):
-                print('급등주:', code)
+                print(f"종목코드: {code}, 종목명: {self.krx_codes['company'][i]}")
                 buy_list.append(code)
 
         self.update_buy_list(buy_list)
