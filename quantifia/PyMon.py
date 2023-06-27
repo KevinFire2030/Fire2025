@@ -96,6 +96,9 @@ class PyMon:
             df['Close'] = df['Close'].astype(float)
             df['Volume'] = df['Volume'].astype(int)
 
+            #high = df['Close'].max()
+            #today = df['Close'][-1]
+
             return df
 
         except:
@@ -130,6 +133,38 @@ class PyMon:
         if today_vol > avg_vol20 * 10:
             return True
 
+    def check_new_high_price(self, code):
+        today = datetime.datetime.today().strftime("%Y%m%d")
+        df = self.get_ohlcv(code, today)
+
+        high = df['Close'].max()
+        today = df['Close'][-1]
+
+        if high == today:
+            return True
+        else:
+            return False
+
+        """
+        if len(volumes) < 21:
+            return False
+
+        sum_vol20 = 0
+        today_vol = 0
+
+        for i, vol in enumerate(volumes):
+            if i == 0:
+                today_vol = vol
+            elif 1 <= i <= 20:
+                sum_vol20 += vol
+            else:
+                break
+
+        avg_vol20 = sum_vol20 / 20
+        if today_vol > avg_vol20 * 10:
+            return True
+        """
+
     def update_buy_list(self, buy_list):
         f = open("buy_list.txt", "wt", encoding='UTF8')
         for code in buy_list:
@@ -138,6 +173,7 @@ class PyMon:
 
     def run(self):
         buy_list = []
+        buy_list2 = []
         num = len(self.krx_codes)
         #codes = self.krx_codes['code']
 
@@ -149,10 +185,21 @@ class PyMon:
 
             print(i, '/', num)
             if self.check_speedy_rising_volume(code):
-                print(f"종목코드: {code}, 종목명: {self.krx_codes['company'][i]}")
+                print(f"[#3 거래량] 종목코드: {code}, 종목명: {self.krx_codes['company'][i]}")
                 buy_list.append(code)
 
-        self.update_buy_list(buy_list)
+        num = len(buy_list)
+
+        for i, code in enumerate(buy_list):
+
+            #print(i, '/', num)
+            print(f"{i} / {num}")
+
+            if self.check_new_high_price(code):
+                print(f"[#3 신고가] 종목코드: {code}, 종목명: {self.krx_codes['company'][i]}")
+                buy_list2.append(code)
+
+        self.update_buy_list(buy_list2)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
